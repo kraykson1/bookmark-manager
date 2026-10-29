@@ -7,6 +7,7 @@ from app.database import get_db
 from app.models import User as UserDB
 from sqlalchemy.orm import Session
 
+
 password_hash = PasswordHash.recommended()
 
 def get_password_hash(password: str) -> str:
@@ -32,12 +33,15 @@ def decode_access_token(token: str) -> dict | None:
     except JWTError:
         return None
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+security = HTTPBearer()
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
 ):
+    token = credentials.credentials
     payload = decode_access_token(token)
     if payload is None:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
