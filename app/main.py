@@ -1,7 +1,6 @@
-from fastapi import FastAPI, Depends, HTTPException, Response
-from app.database import SessionLocal, engine, Base
-from app.auth import router as auth_router
+from fastapi import FastAPI, HTTPException
 from sqlalchemy import text
+from app.database import engine, Base
 from app import models
 from app.routers import users as usersRout, bookmarks as bookmarksRout
 
@@ -15,8 +14,8 @@ Base.metadata.create_all(bind=engine)
 @app.get("/healthz", include_in_schema=False)
 def healthz():
     try:
-        with engine.connect() as conn, text, Response:
-            await conn.execute(text("SELECT 1"))
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
         return {"status": "ok"}
     except Exception:
         raise HTTPException(status_code=503, detail="db-unavailable")
