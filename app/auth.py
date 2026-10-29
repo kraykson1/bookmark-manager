@@ -1,4 +1,3 @@
-from database import engine, Base
 from pwdlib import PasswordHash
 from datetime import datetime, timedelta
 from jose import JWTError, jwt

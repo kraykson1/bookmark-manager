@@ -1,13 +1,19 @@
-from models import User as UserDB, Bookmark as BookmarkDB, Tag as TagDB
 from pydantic import BaseModel
 
 class UserCreate(BaseModel):
     username: str
     password: str
 
-class UserResponse(BaseModel):
-    id: int 
+class UserLogin(BaseModel):
     username: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+
+    class Config:
+        from_attributes = True
 
 class Token(BaseModel):
     access_token: str
