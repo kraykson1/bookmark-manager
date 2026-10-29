@@ -56,3 +56,19 @@ def delete_bookmark(bookmark_id: int, db: Session = Depends(get_db), current_use
         db.commit()
         return {"message": f"Bookmark deleted."}
     raise HTTPException(status_code=404, detail="Bookmark not found.")
+
+from fastapi.responses import RedirectResponse
+
+@router.get("/{bookmark_id}/open")
+def open_bookmark(
+    bookmark_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user)
+):
+    bookmark = db.query(BookmarkDB).filter(
+        BookmarkDB.id == bookmark_id,
+        BookmarkDB.owner_id == current_user.id
+    ).first()
+    if not bookmark:
+        raise HTTPException(status_code=404, detail="Bookmark not found")
+    return RedirectResponse(url=bookmark.url)
