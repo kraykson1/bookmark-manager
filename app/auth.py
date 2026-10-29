@@ -1,6 +1,11 @@
 from pwdlib import PasswordHash
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException
+from app.database import get_db
+from app.models import User as UserDB
+from sqlalchemy.orm import Session
 
 password_hash = PasswordHash.recommended()
 
@@ -26,3 +31,23 @@ def decode_access_token(token: str) -> dict | None:
         return payload
     except JWTError:
         return None
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    payload = decode_access_token(token)
+    if payload is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    username = payload.get("sub")
+    if username is None:
+        raise HTTPException(status_code=401, detail="Token has no username")
+
+    user = db.query(UserDB).filter(UserDB.username == username).first()
+    if user is None:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return user
