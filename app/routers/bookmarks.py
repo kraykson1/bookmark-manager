@@ -43,7 +43,8 @@ def put_bookmark(bookmark_id: int, bookmark_new: BookmarkCreate, db: Session = D
         bookmark.title = bookmark_new.title
         bookmark.description = bookmark_new.description
         db.commit()
-        return {"message": f"Bookmark updated."}
+        db.refresh(bookmark)
+        return bookmark
     raise HTTPException(status_code=404, detail="Bookmark not found.")
 
 # удалить свою закладку
@@ -52,5 +53,6 @@ def delete_bookmark(bookmark_id: int, db: Session = Depends(get_db), current_use
     bookmark = db.query(BookmarkDB).filter(BookmarkDB.id == bookmark_id, BookmarkDB.owner_id == current_user.id).first()
     if bookmark:
         db.delete(bookmark)
+        db.commit()
         return {"message": f"Bookmark deleted."}
     raise HTTPException(status_code=404, detail="Bookmark not found.")
