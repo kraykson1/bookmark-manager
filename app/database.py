@@ -2,7 +2,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:220623vova@db:5432/bookmarkdb")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://kraksonchik:KqNcagRm9i4@amvera-kraksonchik-cnpg-booksmark-database-rw:5432/bookmark")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
