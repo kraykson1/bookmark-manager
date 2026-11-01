@@ -26,6 +26,36 @@ def create_bookmark(bookmark: BookmarkCreate, db: Session = Depends(get_db), cur
     db.refresh(db_bookmark)
     return db_bookmark
 
+@router.get("/search", response_model=list[BookmarkResponse])
+def search_bookmark(
+    bookmark_title: str,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user)
+):
+    bookmarks = db.query(BookmarkDB).filter(
+        BookmarkDB.title.like(f"%{bookmark_title}%"),
+        BookmarkDB.owner_id == current_user.id
+    ).all()
+    if not bookmarks:
+        raise HTTPException(status_code=404, detail="Bookmarks not found")
+    return bookmarks
+
+from fastapi.responses import RedirectResponse
+
+@router.get("/{bookmark_id}/open")
+def open_bookmark(
+    bookmark_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user)
+):
+    bookmark = db.query(BookmarkDB).filter(
+        BookmarkDB.id == bookmark_id,
+        BookmarkDB.owner_id == current_user.id
+    ).first()
+    if not bookmark:
+        raise HTTPException(status_code=404, detail="Bookmark not found")
+    return RedirectResponse(url=bookmark.url)
+
 # найти свою закладку по её id
 @router.get("/{bookmark_id}", response_model=BookmarkResponse)
 def get_bookmark(bookmark_id: int, db: Session = Depends(get_db), current_user: UserDB = Depends(get_current_user)):
@@ -56,33 +86,3 @@ def delete_bookmark(bookmark_id: int, db: Session = Depends(get_db), current_use
         db.commit()
         return {"message": f"Bookmark deleted."}
     raise HTTPException(status_code=404, detail="Bookmark not found.")
-
-from fastapi.responses import RedirectResponse
-
-@router.get("/{bookmark_id}/open")
-def open_bookmark(
-    bookmark_id: int,
-    db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
-):
-    bookmark = db.query(BookmarkDB).filter(
-        BookmarkDB.id == bookmark_id,
-        BookmarkDB.owner_id == current_user.id
-    ).first()
-    if not bookmark:
-        raise HTTPException(status_code=404, detail="Bookmark not found")
-    return RedirectResponse(url=bookmark.url)
-
-@router.get("/search", response_model=list[BookmarkResponse])
-def search_bookmark(
-    bookmark_title: str,
-    db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user)
-):
-    bookmarks = db.query(BookmarkDB).filter(
-        BookmarkDB.title.like(f"%{bookmark_title}%"),
-        BookmarkDB.owner_id == current_user.id
-    ).all()
-    if not bookmarks:
-        raise HTTPException(status_code=404, detail="Bookmarks not found")
-    return bookmarks
