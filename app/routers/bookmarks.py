@@ -74,8 +74,15 @@ def open_bookmark(
     return RedirectResponse(url=bookmark.url)
 
 @router.get("/search", response_model=list[BookmarkResponse])
-def search_bookmark(bookmark_title: str, db: Session = Depends(get_db), current_user: UserDB = Depends(get_current_user)):
-    bookmark = db.query(BookmarkDB).filter(BookmarkDB.title.like(f"%{bookmark_title}%") , BookmarkDB.owner_id == current_user.id).all()
-    if not bookmark:
-        raise HTTPException(status_code=404, detail="Bookmark not found")
-    return bookmark
+def search_bookmark(
+    bookmark_title: str,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user)
+):
+    bookmarks = db.query(BookmarkDB).filter(
+        BookmarkDB.title.like(f"%{bookmark_title}%"),
+        BookmarkDB.owner_id == current_user.id
+    ).all()
+    if not bookmarks:
+        raise HTTPException(status_code=404, detail="Bookmarks not found")
+    return bookmarks
