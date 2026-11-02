@@ -9,7 +9,7 @@ app = FastAPI()
 app.include_router(usersRout.router)
 app.include_router(bookmarksRout.router)
 
-Base.metadata.create_all(bind=engine)
+#Base.metadata.create_all(bind=engine)
 
 @app.get("/healthz", include_in_schema=False)
 def healthz():
